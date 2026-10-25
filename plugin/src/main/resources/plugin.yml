@@ -1,0 +1,31 @@
+name: PandoraRigs
+version: '${version}'
+main: com.surgesmp.pandorarigs.PandoraRigs
+api-version: '1.21'
+description: Six-bone display-entity rigs from any skin — wear one, or set one loose as a boss.
+author: Kadiri
+commands:
+  rig:
+    description: Make, wear and spawn rigs.
+    usage: /rig help
+permissions:
+  pandorarigs.create:
+    description: Make a rig from a skin (/rig create, /rig delete).
+    default: op
+  pandorarigs.become:
+    description: Wear a rig yourself (/rig become, /rig leave, /rig emote, /rig scale).
+    default: op
+  pandorarigs.become.others:
+    description: Put a rig on someone else, or take it off them.
+    default: op
+  pandorarigs.spawn:
+    description: Spawn rig bosses and statues, and clear them.
+    default: op
+  pandorarigs.admin:
+    description: Reload, and every other permission.
+    default: op
+    children:
+      pandorarigs.create: true
+      pandorarigs.become: true
+      pandorarigs.become.others: true
+      pandorarigs.spawn: true

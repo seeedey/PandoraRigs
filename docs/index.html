@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>PandoraRigs Maker</title>
+<meta name="description" content="Turn a Minecraft skin into a PandoraRigs rig: preview it in 3D and build the resource pack in your browser.">
+<style>
+  :root {
+    --bg: #f6f4fb; --panel: #ffffff; --ink: #1d1a26; --muted: #6b6578; --line: #e2ddef;
+    --accent: #7a5fd0; --accent-ink: #ffffff; --bad: #c0392b; --stage: #ece8f6;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #13111a; --panel: #1c1926; --ink: #ece9f5; --muted: #9a93ab; --line: #2e2a3b;
+      --accent: #a28cf0; --accent-ink: #13111a; --bad: #ff7b6b; --stage: #191622;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 15px/1.5 system-ui, -apple-system, "Segoe UI", sans-serif; }
+  main { max-width: 1040px; margin: 0 auto; padding: 32px 16px 64px; }
+  h1 { font-size: 28px; margin: 0 0 4px; letter-spacing: -0.01em; }
+  .lede { color: var(--muted); margin: 0 0 28px; max-width: 62ch; }
+  .grid { display: grid; grid-template-columns: 1fr 1.25fr; gap: 20px; }
+  @media (max-width: 780px) { .grid { grid-template-columns: 1fr; } }
+  .panel { background: var(--panel); border: 1px solid var(--line); border-radius: 14px; padding: 20px; }
+  h2 { font-size: 15px; margin: 0 0 12px; }
+  label.field { display: block; font-size: 13px; color: var(--muted); margin: 14px 0 6px; }
+  input[type=text] { width: 100%; padding: 9px 11px; border-radius: 8px; border: 1px solid var(--line);
+                     background: var(--bg); color: var(--ink); font: inherit; }
+  .drop { display: block; border: 2px dashed var(--line); border-radius: 12px; padding: 22px; text-align: center;
+          cursor: pointer; color: var(--muted); transition: border-color .15s; }
+  .drop.over, .drop:hover { border-color: var(--accent); color: var(--ink); }
+  .drop input { display: none; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg button { border: 0; background: transparent; color: var(--muted); padding: 7px 12px; font: inherit; cursor: pointer; }
+  .seg button[aria-pressed=true] { background: var(--accent); color: var(--accent-ink); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border: 0; border-radius: 9px;
+                   padding: 10px 16px; font: inherit; font-weight: 600; cursor: pointer; }
+  button.primary:disabled { opacity: .45; cursor: not-allowed; }
+  button.ghost { background: transparent; color: var(--ink); border: 1px solid var(--line); border-radius: 9px;
+                 padding: 9px 14px; font: inherit; cursor: pointer; }
+  .err { color: var(--bad); font-size: 13px; min-height: 1.4em; margin-top: 8px; }
+  #stage { width: 100%; aspect-ratio: 4 / 5; border-radius: 12px; background: var(--stage); display: block; touch-action: none; }
+  .hint { color: var(--muted); font-size: 13px; margin-top: 8px; }
+  ul.rigs { list-style: none; padding: 0; margin: 12px 0 0; display: grid; gap: 8px; }
+  ul.rigs li { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--line);
+               border-radius: 10px; cursor: pointer; }
+  ul.rigs li.on { border-color: var(--accent); }
+  ul.rigs canvas { width: 32px; height: 32px; image-rendering: pixelated; border-radius: 4px; background: var(--stage); }
+  ul.rigs .id { font-family: ui-monospace, Consolas, monospace; flex: 1; overflow-wrap: anywhere; }
+  ul.rigs button { border: 0; background: transparent; color: var(--muted); cursor: pointer; font: inherit; padding: 4px 6px; }
+  ol.steps { padding-left: 20px; margin: 8px 0 0; color: var(--muted); }
+  ol.steps li { margin: 4px 0; }
+  code { font-family: ui-monospace, Consolas, monospace; font-size: 13px; background: var(--bg);
+         border: 1px solid var(--line); border-radius: 5px; padding: 1px 5px; color: var(--ink); overflow-wrap: anywhere; }
+  .actions { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+</style>
+</head>
+<body>
+<main>
+  <h1>PandoraRigs Maker</h1>
+  <p class="lede">Turn a Minecraft skin into a rig for the PandoraRigs plugin. Preview it in 3D, then build the
+    resource pack. Everything happens in your browser; nothing is uploaded anywhere.</p>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>1. Add a skin</h2>
+      <label class="drop" id="drop">
+        <input type="file" id="file" accept="image/png">
+        <strong>Drop a skin PNG here</strong><br>or click to choose one (64×64 or old 64×32)
+      </label>
+      <label class="field" for="rigId">Rig id: lowercase letters, digits and _</label>
+      <input type="text" id="rigId" placeholder="e.g. pandora" maxlength="32" autocomplete="off" spellcheck="false">
+      <label class="field">Arms</label>
+      <div class="row">
+        <div class="seg" id="armSeg">
+          <button type="button" data-v="auto" aria-pressed="true">Auto</button>
+          <button type="button" data-v="slim" aria-pressed="false">Slim</button>
+          <button type="button" data-v="classic" aria-pressed="false">Classic</button>
+        </div>
+        <span class="hint" id="armNote"></span>
+      </div>
+      <div class="actions">
+        <button class="primary" id="add" disabled>Add rig</button>
+      </div>
+      <div class="err" id="err"></div>
+
+      <h2 style="margin-top:18px">2. Your rigs</h2>
+      <p class="hint" id="empty">None yet. Every rig you add goes into one pack.</p>
+      <ul class="rigs" id="rigs"></ul>
+
+      <h2 style="margin-top:18px">3. Download</h2>
+      <div class="actions">
+        <button class="primary" id="dlPack" disabled>Download rigs-pack.zip</button>
+        <button class="ghost" id="dlSkins" disabled>Download skins.zip</button>
+      </div>
+      <ol class="steps">
+        <li>Unzip <code>skins.zip</code> into <code>plugins/PandoraRigs/skins/</code>.</li>
+        <li>In game, run <code>/rig create &lt;id&gt; &lt;id&gt;.png</code> for each rig.</li>
+        <li>The plugin hosts the pack itself. Or upload <code>rigs-pack.zip</code> somewhere public (a GitHub
+          release works) and set <code>pack.external-url</code>. You can also merge its <code>assets/</code> into
+          your server pack and set <code>pack.send: false</code>.</li>
+      </ol>
+    </section>
+
+    <section class="panel">
+      <h2>Preview</h2>
+      <canvas id="stage"></canvas>
+      <div class="row" style="margin-top:10px">
+        <div class="seg" id="animSeg">
+          <button type="button" data-v="walk" aria-pressed="true">Walk</button>
+          <button type="button" data-v="idle" aria-pressed="false">Idle</button>
+          <button type="button" data-v="swing" aria-pressed="false">Swing</button>
+        </div>
+      </div>
+      <p class="hint">Drag to turn it, scroll to zoom. The preview uses the same bones and UVs as the pack.</p>
+    </section>
+  </div>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script type="importmap">
+{ "imports": {
+  "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+  "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+} }
+</script>
+<script type="module" src="app.js"></script>
+</body>
+</html>

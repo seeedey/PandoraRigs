@@ -1,0 +1,55 @@
+# PandoraRigs — six item displays posed as a body, wearing any skin.
+#
+# A rig is made in game with /rig create <id> <player name | skin file in skins/>. The plugin
+# cuts the skin into six bone models, writes them into its own resource pack (rigs-pack.zip in this
+# folder) and sends that pack to everyone. It sits beside any other server pack; it does not replace it.
+
+pack:
+  # The plugin serves the pack itself on this port. Open it in your firewall / host panel.
+  port: 8125
+  # The address players reach the server on. "auto" uses server-ip from server.properties, or
+  # 127.0.0.1 when that is blank (fine for a local test server, wrong for a public one).
+  host: auto
+  # Set this instead if you upload rigs-pack.zip somewhere yourself (a GitHub release works, and so does
+  # the zip from the PandoraRigs Maker site). The built-in server is then off, and the plugin downloads the
+  # url once on start and on /rig reload to learn its sha1, so re-run /rig reload after you replace the file.
+  external-url: ''
+  # Off if you merged the pack's assets/ folder into your own server pack: then nothing extra is sent.
+  send: true
+  # Kick players who decline the pack. Off by default: a broken url with this on kicks everyone.
+  required: false
+  prompt: 'Rig models — without them rigs draw as paper.'
+
+# What a new rig gets. Every value can be changed per rig under rigs.<id> afterwards.
+defaults:
+  # Body size, 1 = a normal player (two blocks tall).
+  scale: 1.0
+  boss:
+    # Any mob with melee AI. It is made invisible and the rig rides it.
+    mob: HUSK
+    health: 300
+    damage: 10
+    speed: 0.28
+    # A size bigger than the avatar default makes a boss read as a boss.
+    scale: 1.6
+    # What the rig holds. Any material, or '' for empty hands.
+    weapon: NETHERITE_SWORD
+    bar-color: PURPLE
+
+avatar:
+  # Takes the head off the wearer's own screen, so first person isn't looking out through a skull.
+  hide-head-from-self: true
+
+# Filled in by /rig create. Shipped with Pandora, from Pandora's own skin (skins/pandora.png).
+rigs:
+  pandora:
+    display: '<gradient:#F2EEFF:#8E7CC3><bold>Pandora</bold></gradient>'
+    scale: 1.5
+    boss:
+      mob: HUSK
+      health: 600
+      damage: 14
+      speed: 0.3
+      scale: 2.0
+      weapon: ''
+      bar-color: PURPLE

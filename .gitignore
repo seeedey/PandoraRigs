@@ -1,0 +1,6 @@
+plugin/build/
+plugin/.gradle/
+.gradle/
+*.class
+.idea/
+.vscode/
